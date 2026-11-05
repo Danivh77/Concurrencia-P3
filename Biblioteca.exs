@@ -118,7 +118,6 @@ defmodule Estante do
   end
 end
 
-
 defmodule Biblioteca do
   @aforo_maximo 5
   @capacidad_estante 3
@@ -179,15 +178,16 @@ defmodule Biblioteca do
     Util.mostrar_mensaje("Bibliotecario #{nombre} empieza a trabajar: #{inspect(self())}")
 
     Enum.each(lista_libros, fn libro ->
-      Process.sleep(Enum.random(200..500)) 
-   
+      Process.sleep(Enum.random(200..500))
+
       Semaforo.wait(espacios, "#{nombre} ESPERA: el estante está lleno")
-      Semaforo.wait(mutex)      
+      Semaforo.wait(mutex)
 
       Util.mostrar_mensaje("#{nombre} coloca \"#{libro}\" en el estante")
       Estante.poner(estante, libro)
 
-      Semaforo.signal(mutex) 
+      Semaforo.signal(mutex)
+      Semaforo.signal(libros)
     end)
 
     send(principal_pid, {:bibliotecario_finalizado, nombre})
@@ -201,7 +201,7 @@ defmodule Biblioteca do
     Util.mostrar_mensaje("#{nombre} ENTRA a la biblioteca")
 
     Semaforo.wait(libros, "#{nombre} ESPERA: el estante está vacío")
-    Semaforo.wait(mutex) 
+    Semaforo.wait(mutex)
 
     libro = Estante.tomar(estante)
     Util.mostrar_mensaje("#{nombre} toma \"#{libro}\"")
@@ -235,4 +235,3 @@ defmodule Biblioteca do
 end
 
 Biblioteca.main()
-
